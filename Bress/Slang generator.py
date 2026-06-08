@@ -24,8 +24,8 @@ TIMEOUT          = 240
 logging.basicConfig(level=logging.INFO, format="%(levelname)s | %(message)s")
 log = logging.getLogger(__name__)
 
-# Everything that you find inside the triple quotation marks ("""Example""") are documentation
-# If you later wants to visualize what a precise function does, you can add to the code:
+# Everything that you find inside the triple quotation marks ("""This""") is documentation
+# If you later want to visualize what a precise function does, you can add to the main (if __name__ == "__main__":):
 # help(function_name)
 # This will print on console the documentation related to the function :D 
 
@@ -88,12 +88,28 @@ def build_prompt(n: int) -> str:
         avoid_section = ""
 
     return f"""
-Sei un generatore creativo di slang italiano contemporaneo.
+Sei un generatore creativo e altamente competente di slang italiano contemporaneo.
 
-Genera esattamente {n} voci slang NUOVE e ORIGINALI usate da giovani italiani oggi.
+Il tuo compito è creare espressioni slang NUOVE, ORIGINALI e NON ESISTENTI, plausibili nell'uso tra giovani italiani (Gen Z e giovani adulti).
+
+Regole fondamentali:
+- Genera esattamente {n} voci slang.
+- Ogni voce deve essere verosimile ma non già esistente nel linguaggio attuale.
+- Evita assolutamente duplicati o varianti di parole già note.
+- NON includere termini presenti nella lista seguente (slang già esistenti o già generati):
 {avoid_section}
-Rispondi SOLO con JSON valido, senza testo aggiuntivo, senza markdown, senza code block.
+- Non spiegare il processo, non commentare, non aggiungere testo extra.
 
+Qualità richieste per ogni slang:
+- Deve sembrare naturale in conversazioni informali tra giovani italiani.
+- Può derivare da:
+-- abbreviazioni creative
+-- italianizzazione di parole inglesi
+-- metafore culturali moderne (social, meme, internet, lifestyle)
+-- storpiature fonetiche
+-- Deve essere facilmente riutilizzabile in contesto reale.
+
+Struttura JSON di output:
 {{
   "entries": [
     {{
@@ -103,7 +119,32 @@ Rispondi SOLO con JSON valido, senza testo aggiuntivo, senza markdown, senza cod
     }}
   ]
 }}
+
+Vincoli finali:
+- Le definizioni devono essere brevi, chiare e immediatamente comprensibili
+- Gli esempi devono mostrare uso naturale in italiano colloquiale
+- Ogni entry deve essere semanticamente distinta dalle altre
 """
+
+# Quick tip: select the code and press Ctrl + / for commenting/uncommenting in bulk ;)
+
+#     return f"""
+# Sei un generatore creativo di slang italiano contemporaneo.
+
+# Genera esattamente {n} voci slang NUOVE e ORIGINALI usate da giovani italiani oggi.
+# {avoid_section}
+# Rispondi SOLO con JSON valido, senza testo aggiuntivo, senza markdown, senza code block.
+
+# {{
+#   "entries": [
+#     {{
+#       "parola": "stringa",
+#       "definizione": "spiegazione chiara e diretta",
+#       "contesto_di_utilizzo": ["esempio di frase 1", "esempio di frase 2"]
+#     }}
+#   ]
+# }}
+# """
 
 # ---------------------------------------------------------------------------
 # Ollama client
@@ -233,6 +274,7 @@ def print_entries(entries: List[Dict]) -> None:
 # ---------------------------------------------------------------------------
 
 if __name__ == "__main__":
+    # help(load_existing_words)
     total = load_existing_words()
     log.info("Words already in the database: %d", len(total))
 

@@ -106,5 +106,56 @@
       "La mia amica è sempre una **chatterbox**! A volte non riuscivo a svelare i miei pensieri a causa del suo ritmo frenato di conversazione."
     ],
     "timestamp": "2026-06-08T09:59:11.094923"
+  },
+  {
+    "parola": "smacca",
+    "definizione": "Scusa, ma non capisco bene la tua battuta. Sembra che tu stia cercando di essere divertente, ma non mi hai convinto.",
+    "contesto_di_utilizzo": [
+      "Ciao, ma smacca! Non ho capito come funziona questa cosa"
+    ],
+    "timestamp": "2026-06-08T10:07:53.653607"
+  },
+  {
+    "parola": "dond",
+    "definizione": "Stai facendo un po' di danzamine fuori dal mondo? Sembra che tu stia cercando di essere originale.",
+    "contesto_di_utilizzo": [
+      "Ehi, ti ho visto fare un dond! Hai voglia di fare qualcosa di più interessante"
+    ],
+    "timestamp": "2026-06-08T10:07:53.653607"
+  },
+  {
+    "parola": "grigli",
+    "definizione": "Un modo per dire che qualcuno è un po' troppo romantico o idealista, come se fosse un'ombra del mondo reale.",
+    "contesto_di_utilizzo": [
+      "Ehi, ti dico che sei troppo grigli! Non devi essere così complicato"
+    ],
+    "timestamp": "2026-06-08T10:07:53.653607"
+  },
+  {
+    "parola": "chillazon",
+    "definizione": "Un'esuberanza di energia positiva, tipo un'esplosione di felicità che si fa sentire come se fossi in un film d’avventura.",
+    "contesto_di_utilizzo": [
+      "Mi sentivo chillazon dopo aver visto il concerto!",
+      "Facciamo un po' di chillazon, ragazzi!"
+    ],
+    "timestamp": "2026-06-08T13:18:09.043024"
+  },
+  {
+    "parola": "grump",
+    "definizione": "Qualche cosa che ti fa sentire triste e frustrato, quasi come se fossi in un film noir.",
+    "contesto_di_utilizzo": [
+      "Ho avuto un giorno così grump! Non mi piace.",
+      "Scusami, ma stavo cercando di essere grump!"
+    ],
+    "timestamp": "2026-06-08T13:18:09.043024"
+  },
+  {
+    "parola": "flosch",
+    "definizione": "Una persona che è sempre in movimento, con mille attività da fare e un'aura di frenetismo. Il tipo che si sente sopraffatto dal ritmo del mondo.",
+    "contesto_di_utilizzo": [
+      "E' una flosch! Non si ferma mai!",
+      "Sono appena tornato dalla flosch, ho passato tutta la giornata a fare mille cose!"
+    ],
+    "timestamp": "2026-06-08T13:18:09.043024"
   }
 ]
