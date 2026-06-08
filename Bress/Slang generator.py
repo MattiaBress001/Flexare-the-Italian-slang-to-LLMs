@@ -19,35 +19,41 @@ MAX_RETRIES      = 3
 RETRY_DELAY      = 1.5
 SCRIPT_DIR       = os.path.dirname(os.path.abspath(__file__))
 OUTPUT_FILE      = os.path.join(SCRIPT_DIR, "parole_generate.json")
+TIMEOUT          = 240
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s | %(message)s")
 log = logging.getLogger(__name__)
+
+# Everything that you find inside the triple quotation marks ("""Example""") are documentation
+# If you later wants to visualize what a precise function does, you can add to the code:
+# help(function_name)
+# This will print on console the documentation related to the function :D 
 
 # ---------------------------------------------------------------------------
 # Persistent storage
 # ---------------------------------------------------------------------------
 
 def load_existing_words() -> List[Dict]:
-    """Carica le parole già generate dal file JSON. Ritorna lista vuota se non esiste."""
+    """Load the already generated slang terms from the JSON file. The function returns an empty list if this file doesn't exist.""" 
     if not os.path.exists(OUTPUT_FILE):
         return []
     with open(OUTPUT_FILE, "r", encoding="utf-8") as f:
         try:
             return json.load(f)
         except json.JSONDecodeError:
-            log.warning("parole_generate.json corrotto, si riparte da zero.")
+            log.warning("parole_generate.json is corrupt, let's restart from the beginning.")
             return []
 
 
 def save_words(entries: List[Dict]) -> None:
-    """Sovrascrive il file JSON con la lista aggiornata."""
+    """Overwrite the file JSON with the alredy genereted slang terms with an updated list."""
     with open(OUTPUT_FILE, "w", encoding="utf-8") as f:
         json.dump(entries, f, ensure_ascii=False, indent=2)
-    log.info("✓ parole_generate.json aggiornato (%d parole totali).", len(entries))
+    log.info("The file parole_generate.json has been updated (%d total words).", len(entries))
 
 
 def append_new_entries(new_entries: List[Dict]) -> List[Dict]:
-    """Aggiunge le nuove entry a quelle esistenti, evitando duplicati, e salva."""
+    """Adds the new entries to the existing ones, avoiding duplicates, and saves."""
     existing     = load_existing_words()
     known_words  = {e["parola"].lower() for e in existing}
 
@@ -81,7 +87,8 @@ def build_prompt(n: int) -> str:
     else:
         avoid_section = ""
 
-    return f"""Sei un generatore creativo di slang italiano contemporaneo.
+    return f"""
+Sei un generatore creativo di slang italiano contemporaneo.
 
 Genera esattamente {n} voci slang NUOVE e ORIGINALI usate da giovani italiani oggi.
 {avoid_section}
@@ -102,13 +109,13 @@ Rispondi SOLO con JSON valido, senza testo aggiuntivo, senza markdown, senza cod
 # Ollama client
 # ---------------------------------------------------------------------------
 
-def call_model(prompt: str, timeout: int = 180) -> str:
+def call_model(prompt: str) -> str:
     payload = {
         "model": MODEL,
         "prompt": prompt,
         "stream": False,
     }
-    response = requests.post(OLLAMA_URL, json=payload, timeout=timeout)
+    response = requests.post(OLLAMA_URL, json=payload, timeout=TIMEOUT)
     response.raise_for_status()
     return response.json()["response"]
 
@@ -121,7 +128,7 @@ def extract_json(text: str) -> str:
 
     start = text.find("{")
     if start == -1:
-        raise ValueError("Nessun oggetto JSON trovato nell'output.")
+        raise ValueError("No JSON objects were found in the output.")
 
     depth = 0
     for i, ch in enumerate(text[start:], start):
@@ -132,7 +139,7 @@ def extract_json(text: str) -> str:
         if depth == 0:
             return text[start : i + 1]
 
-    raise ValueError("JSON non bilanciato nell'output del modello.")
+    raise ValueError("Unbalanced JSON in the model output.")
 
 # ---------------------------------------------------------------------------
 # Parsing & validation
@@ -144,7 +151,7 @@ def parse_entries(raw: str) -> List[Dict]:
     entries_raw = data.get("entries")
 
     if not isinstance(entries_raw, list) or len(entries_raw) == 0:
-        raise ValueError("Il campo 'entries' è assente o vuoto.")
+        raise ValueError("The 'entries' field is missing or empty.")
 
     entries = []
     for i, item in enumerate(entries_raw):
@@ -153,7 +160,7 @@ def parse_entries(raw: str) -> List[Dict]:
         contesti_raw = item.get("contesto_di_utilizzo", [])
 
         if not parola or not definizione:
-            log.warning("Entry %d ignorata: mancano campi obbligatori.", i)
+            log.warning("Entry %d ignored: required fields are missing.", i)
             continue
 
         contesti = (
@@ -179,7 +186,7 @@ def generate_slang(n: int = NUM_ENTRIES) -> List[Dict]:
     prompt = build_prompt(n)
 
     for attempt in range(1, MAX_RETRIES + 1):
-        log.info("Tentativo %d/%d …", attempt, MAX_RETRIES)
+        log.info("Attempt %d/%d …", attempt, MAX_RETRIES)
         try:
             raw     = call_model(prompt)
             entries = parse_entries(raw)
@@ -187,19 +194,19 @@ def generate_slang(n: int = NUM_ENTRIES) -> List[Dict]:
             if not entries:
                 raise ValueError("Nessuna entry valida estratta.")
 
-            log.info("✓ Estratte %d/%d entries.", len(entries), n)
+            log.info("✓ %d/%d entries retrieved.", len(entries), n)
             return entries
 
         except requests.RequestException as e:
-            log.error("Errore di rete: %s", e)
+            log.error("Connection error: %s", e)
         except (ValueError, KeyError, json.JSONDecodeError) as e:
-            log.warning("Parsing fallito: %s", e)
+            log.warning("Parsing failed: %s", e)
 
         if attempt < MAX_RETRIES:
-            log.info("Riprovo tra %.1fs …", RETRY_DELAY)
+            log.info("I'll try again after %.1fs …", RETRY_DELAY)
             time.sleep(RETRY_DELAY)
 
-    log.error("Tutti i tentativi falliti.")
+    log.error("All attempts are failed.")
     return []
 
 # ---------------------------------------------------------------------------
@@ -208,7 +215,7 @@ def generate_slang(n: int = NUM_ENTRIES) -> List[Dict]:
 
 def print_entries(entries: List[Dict]) -> None:
     if not entries:
-        print("\nNessuna entry da mostrare.")
+        print("\nNo entry to show.")
         return
 
     print(f"\n{'─' * 60}")
@@ -227,15 +234,15 @@ def print_entries(entries: List[Dict]) -> None:
 
 if __name__ == "__main__":
     total = load_existing_words()
-    log.info("Parole già nel database: %d", len(total))
+    log.info("Words already in the database: %d", len(total))
 
-    print("\nQuante volte vuoi inviare il prompt? (INVIO = 1)")
+    print("\nHow many times do you want to send the prompt? (ENTER = 1)")
     cmd = input("> ").strip()
 
     try:
         runs = int(cmd) if cmd else 1
     except ValueError:
-        log.warning("Input non valido, uso 1.")
+        log.warning("The input is invalid, I'm using 1.")
         runs = 1
 
     for i in range(runs):
@@ -245,9 +252,9 @@ if __name__ == "__main__":
 
         if new_entries:
             added = append_new_entries(new_entries)
-            log.info("Parole nuove aggiunte: %d", len(added))
+            log.info("New words added: %d", len(added))
             print_entries(added)
         else:
-            print("Nessuna parola generata in questo giro.")
+            print("No words generated in this round.")
 
-    log.info("Fatto! Totale parole salvate: %d", len(load_existing_words()))
+    log.info("Done! Total words saved: %d", len(load_existing_words()))
